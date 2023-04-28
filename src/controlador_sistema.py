@@ -19,11 +19,12 @@ def menu_sistema(usuario_existente):
 
         print('\n\n\n --------- Sistema de Cadastro --------- \n')
 
-        print('  1 – Realizar Busca Arxiv')
+        print('  1 – Enviar menssaem')
         print('  2 – Adicionar Contato')
-        print('  3 – Listar Contatos')
-        print('  4 – Atualizar Dados')
-        print('  5 – Voltar Menu Principal')
+        print('  3 – Decodificar')
+        print('  4 – Listar Contatos')
+        print('  5 – Atualizar Dados')
+        print('  6 – Voltar Menu Principal')
     
 
         opcao = input('\n  Digite a opção desejada: ')
@@ -33,12 +34,14 @@ def menu_sistema(usuario_existente):
         elif opcao == '2':
             adicionar_contato(app.usuario_dao,usuario_existente)
         elif opcao == '3':
-            listar_contatos(app.usuario_dao,usuario_existente)
+            decodificar(app.usuario_dao,usuario_existente)
         elif opcao == '4':
-            atualizar_dados(app.usuario_dao,usuario_existente)
+            listar_contatos(app.usuario_dao,usuario_existente)
         elif opcao == '5':
+            atualizar_dados(app.usuario_dao,usuario_existente)
+        elif opcao == '6':
             print('\n\n  Saindo do sistema ...')
-            menu.menu_principal()
+            break
         else:
             print('\n\n  Opção Inválida!')
 
@@ -88,7 +91,7 @@ def enviar_email(usuario_dao,usuario_existente):
     codigo_inv = []
     identidade = [[1,0],[0,1]]
 
-    chave = eval(usuario_existente.get_iduser())
+    chave = eval(usuario_existente.get_chave())
     chave_inv = np.linalg.inv(chave)
 
     lista = funcao.letra_em_numero(frase)
@@ -101,19 +104,59 @@ def enviar_email(usuario_dao,usuario_existente):
         matriz_chave=funcao.codifiar(chave_inv,codigo[j])
         codigo_inv.append(matriz_chave)
 
-    lista_contatos = eval(usuario_existente.get_contatos())
 
     for i in range(len(remetente_lista)):
         usuario_send = usuario_dao.buscar_email(remetente_lista[i])
+  
+        utils.encaminhar_email(app.email_from,usuario_send.get_email(),app.senha,assunto,codigo,usuario_send,usuario_existente)
 
-        if remetente_lista[i] in lista_contatos:
-            utils.encaminhar_email(app.email_from,usuario_send.get_email(),app.senha,assunto,frase,usuario_send,usuario_existente)
-        else:
-            utils.encaminhar_email(app.email_from,usuario_send.get_email(),app.senha,assunto,codigo,usuario_send,usuario_existente)
+
 
     print("\n\n   Email enviado!")
 
 
+
+def decodificar(usuario_dao,usuario_existente):
+
+
+    codigo_unico = str(input('\n  Diite o código usuário: '))
+    
+
+    usuario_send = usuario_dao.buscar_codigo_unico(codigo_unico)
+
+    if usuario_send is None:
+        print('\n    Código invalido!')
+        codigo_unico = input('\n  Digite um novo código: ')
+        usuario_send = usuario_dao.buscar_codigo_unico(codigo_unico)
+        if usuario_send is None:
+            menu_sistema(usuario_existente)
+
+    contatos = usuario_send.get_contatos()
+    lista_contatos = eval(contatos)
+
+    if usuario_existente.get_email() in lista_contatos:
+        print("\n   Decodificação Arovada!")
+        codigo = str(input("\n   Cole o codigo aqui: "))
+        matriz = eval(codigo)
+        codigo = []
+        codigo_inv = []
+    
+        chave = eval(usuario_send.get_chave())
+        chave_inv = np.linalg.inv(chave)
+
+        for j in range(len(matriz)):
+            matriz_chave=funcao.codifiar(chave_inv,matriz[j])
+            codigo_inv.append(matriz_chave)
+
+        frase_decod = funcao.formar_frase(codigo_inv)
+        frase_list = funcao.numero_em_letra(frase_decod)
+        nova_frase = "".join(frase_list)
+        print(nova_frase)
+
+    else:
+        print("\n   Decodificação Negada!")
+        menu_sistema(usuario_existente)
+    
 
 
 def listar_contatos(usuario_dao,usuario_existente):

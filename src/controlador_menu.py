@@ -68,9 +68,10 @@ def menu_cadastrar_usuario(usuario_dao):
         print(' Senhas incompativeis. Tente novamente!')
         senha_confirm= input('  Confirmar senha: ')
 
-    iduser = funcao.criar_chave()
+    chave = funcao.criar_chave()
+    chave_user = utils.gerar_chave()
 
-    usuario = Usuario(cpf, nome, email, senha, iduser, contatos="[]")
+    usuario = Usuario(cpf, nome, email, senha, chave, contatos="[]", chave_user=chave_user)
 
     usuario_dao.cadastrar_usuario(usuario)
 

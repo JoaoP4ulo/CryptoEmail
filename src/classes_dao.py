@@ -18,12 +18,12 @@ class UsuarioDAO:
         cursor = conexao.cursor()
 
         comando_sql = """
-        INSERT INTO usuarios (cpf,nome,email,senha,iduser,contatos) 
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO usuarios (cpf,nome,email,senha,chave,contatos,chave_user) 
+        VALUES (?, ?, ?, ?, ?, ?,?)
         """
         
         cursor.execute(comando_sql, \
-            (usuario._cpf, usuario._nome, usuario._email, usuario._senha, usuario._iduser, usuario._contatos))
+            (usuario._cpf, usuario._nome, usuario._email, usuario._senha, usuario._chave, usuario._contatos,usuario._chave_user))
 
         conexao.commit()
 
@@ -49,7 +49,8 @@ class UsuarioDAO:
             return None
         
         usuario = Usuario(cpf=usuario_tupla[0], nome=usuario_tupla[1], \
-            email=usuario_tupla[2], senha=usuario_tupla[3],iduser=usuario_tupla[4],contatos=usuario_tupla[5])
+            email=usuario_tupla[2], senha=usuario_tupla[3],chave=usuario_tupla[4],contatos=usuario_tupla[5], chave_user=usuario_tupla[6])
+            
 
 
         return usuario
@@ -75,7 +76,8 @@ class UsuarioDAO:
             return None
         
         usuario = Usuario(cpf=usuario_tupla[0], nome=usuario_tupla[1], \
-            email=usuario_tupla[2], senha=usuario_tupla[3],iduser=usuario_tupla[4],contatos=usuario_tupla[5])
+            email=usuario_tupla[2], senha=usuario_tupla[3],chave=usuario_tupla[4],contatos=usuario_tupla[5], chave_user=usuario_tupla[6])
+            
 
 
         return usuario
@@ -105,7 +107,7 @@ class UsuarioDAO:
         for usuario_tupla in usuarios_tuplas:
 
             usuario = Usuario(cpf=usuario_tupla[0], nome=usuario_tupla[1], \
-                email=usuario_tupla[2], senha=usuario_tupla[3],iduser=usuario_tupla[4],contatos=usuario_tupla[5])
+                email=usuario_tupla[2], senha=usuario_tupla[3],chave=usuario_tupla[4],contatos=usuario_tupla[5], chave_user=usuario_tupla[6])
             
             usuarios.append(usuario)
         
@@ -140,3 +142,28 @@ class UsuarioDAO:
 
         conexao.close()
 
+    def buscar_codigo_unico(self, codigo_unico):
+
+            conexao = sqlite3.connect(self.db_path)
+
+            cursor = conexao.cursor()
+
+            comando_sql = """
+            SELECT * FROM usuarios WHERE chave_user = ?
+            """
+            
+            cursor.execute(comando_sql, (codigo_unico, ))
+
+            usuario_tupla = cursor.fetchone()
+
+            conexao.close()
+
+            if usuario_tupla is None:
+                return None
+            
+            usuario = Usuario(cpf=usuario_tupla[0], nome=usuario_tupla[1], \
+                email=usuario_tupla[2], senha=usuario_tupla[3],chave=usuario_tupla[4],contatos=usuario_tupla[5], chave_user=usuario_tupla[6])
+                
+
+
+            return usuario

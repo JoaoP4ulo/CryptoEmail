@@ -3,13 +3,14 @@
 
 class Usuario:
 
-    def __init__(self, cpf, nome, email, senha, iduser, contatos):
+    def __init__(self, cpf, nome, email, senha, chave, contatos, chave_user):
         self._cpf=cpf
         self._nome=nome
         self._email=email
         self._senha=senha
-        self._iduser=iduser
+        self._chave=chave
         self._contatos=contatos
+        self._chave_user=chave_user
     
    
     def get_cpf(self):
@@ -33,16 +34,22 @@ class Usuario:
     def set_senha(self, novo_senha):
         self._senha = novo_senha
 
-    def get_iduser(self):
-        return self._iduser
-    def set_iduser(self, novo_iduser):
-        self._iduser = novo_iduser
+    def get_chave(self):
+        return self._chave
+    def set_chave(self, novo_chave):
+        self._chave = novo_chave
 
     def get_contatos(self):
         return self._contatos
     def set_contatos(self, novo_contatos):
         self._contatos = novo_contatos
+
+    def get_chave_user(self):
+        return self._chave_user
+    def set_chave_user(self, novo_chave_user):
+        self._chave_user = novo_chave_user
+
     
     def __repr__(self):
-        return f'CPF: {self._cpf}\nNome: {self._nome}\nEmail: {self._email}\nSenha: {self._senha}\nId usuário: {self._iduser}\nContatos: {self._contatos}'
+        return f'CPF: {self._cpf}\nNome: {self._nome}\nEmail: {self._email}\nSenha: {self._senha}\nId usuário: {self._chave}\nContatos: {self._contatos}'
 
