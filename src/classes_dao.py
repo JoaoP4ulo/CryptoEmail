@@ -2,7 +2,7 @@ import sqlite3
 import requests
 import xmltodict
 
-from src.classes_base import Usuario
+from src.classes_base import Usuario, Mensagem
 
 #objeto de acesso a dados - DAO
 
@@ -18,12 +18,12 @@ class UsuarioDAO:
         cursor = conexao.cursor()
 
         comando_sql = """
-        INSERT INTO usuarios (cpf,nome,email,senha,chave,contatos,chave_user) 
-        VALUES (?, ?, ?, ?, ?, ?,?)
+        INSERT INTO usuarios (cpf,nome,email,senha,contatos,chave_user) 
+        VALUES (?, ?, ?, ?, ?, ?)
         """
         
         cursor.execute(comando_sql, \
-            (usuario._cpf, usuario._nome, usuario._email, usuario._senha, usuario._chave, usuario._contatos,usuario._chave_user))
+            (usuario._cpf, usuario._nome, usuario._email, usuario._senha, usuario._contatos,usuario._chave_user))
 
         conexao.commit()
 
@@ -49,7 +49,7 @@ class UsuarioDAO:
             return None
         
         usuario = Usuario(cpf=usuario_tupla[0], nome=usuario_tupla[1], \
-            email=usuario_tupla[2], senha=usuario_tupla[3],chave=usuario_tupla[4],contatos=usuario_tupla[5], chave_user=usuario_tupla[6])
+            email=usuario_tupla[2], senha=usuario_tupla[3],contatos=usuario_tupla[4], chave_user=usuario_tupla[5])
             
 
 
@@ -76,7 +76,7 @@ class UsuarioDAO:
             return None
         
         usuario = Usuario(cpf=usuario_tupla[0], nome=usuario_tupla[1], \
-            email=usuario_tupla[2], senha=usuario_tupla[3],chave=usuario_tupla[4],contatos=usuario_tupla[5], chave_user=usuario_tupla[6])
+            email=usuario_tupla[2], senha=usuario_tupla[3],contatos=usuario_tupla[4], chave_user=usuario_tupla[5])
             
 
 
@@ -107,7 +107,7 @@ class UsuarioDAO:
         for usuario_tupla in usuarios_tuplas:
 
             usuario = Usuario(cpf=usuario_tupla[0], nome=usuario_tupla[1], \
-                email=usuario_tupla[2], senha=usuario_tupla[3],chave=usuario_tupla[4],contatos=usuario_tupla[5], chave_user=usuario_tupla[6])
+                email=usuario_tupla[2], senha=usuario_tupla[3],contatos=usuario_tupla[4], chave_user=usuario_tupla[5])
             
             usuarios.append(usuario)
         
@@ -162,8 +162,84 @@ class UsuarioDAO:
                 return None
             
             usuario = Usuario(cpf=usuario_tupla[0], nome=usuario_tupla[1], \
-                email=usuario_tupla[2], senha=usuario_tupla[3],chave=usuario_tupla[4],contatos=usuario_tupla[5], chave_user=usuario_tupla[6])
+                email=usuario_tupla[2], senha=usuario_tupla[3],contatos=usuario_tupla[4], chave_user=usuario_tupla[5])
                 
 
 
             return usuario
+
+
+class MensagemDao:
+
+    def __init__(self,db_path):
+        self.db_path = db_path
+
+    def buscar_id(self, mensagem_id):
+
+        conexao = sqlite3.connect(self.db_path)
+
+        cursor = conexao.cursor()
+
+        comando_sql = """
+        SELECT * FROM mensagens WHERE id = ?
+        """
+        
+        cursor.execute(comando_sql, (mensagem_id, ))
+
+        mensagem_tupla = cursor.fetchone()
+
+        conexao.close()
+
+        if mensagem_tupla is None:
+            return None
+        
+        mensagem = Mensagem(id=mensagem_tupla[0],usuario_from=mensagem_tupla[1],usuario_to=mensagem_tupla[2],mensagem=mensagem_tupla[3],chave_msg=mensagem_tupla[4])
+
+        return mensagem
+    
+
+    def criar_mensagem(self,mensagem):
+    
+            
+        conexao = sqlite3.Connection(self.db_path)
+
+        cursor = conexao.cursor()
+
+        comando_sql = """
+        INSERT INTO mensagens (id, usuario_from, usuario_to, mensagem, chave_msg) 
+        VALUES (?, ?, ?, ?, ?)
+        """
+        
+        cursor.execute(comando_sql, \
+            (mensagem.get_id(),mensagem.get_usuario_from(),mensagem.get_usuario_to(),mensagem.get_mensagem(),mensagem.get_chave_msg()))
+
+        conexao.commit()
+
+        conexao.close()
+
+    def deletar_mensagem(self,mensagem):
+        
+        conexao = sqlite3.Connection(self.db_path)
+
+        cursor = conexao.cursor()
+
+        comando_sql = """
+        DELETE FROM mensagens WHERE id = ?
+        """
+        cursor.execute(comando_sql, (mensagem.get_id(), ))
+
+        conexao.close()
+
+    def atualizar_chave(self, usuario_send, new_chave):
+        
+        conexao = sqlite3.Connection(self.db_path)
+
+        cursor = conexao.cursor()
+
+        comando_sql = """
+        UPDATE mensagens SET chave_msg = ? WHERE email = ?
+        """
+
+        cursor.execute(comando_sql, (str(new_chave), usuario_send._email))
+
+        conexao.close()

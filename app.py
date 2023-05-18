@@ -5,7 +5,7 @@ import string
 import numpy as np
 import src.funcao 
 
-from src.classes_dao import UsuarioDAO
+from src.classes_dao import UsuarioDAO,MensagemDao
 
 
 
@@ -15,6 +15,7 @@ db_path = 'cadastros.bd'
 senha = 'owtirgryroymfuig'
 email_from='jppelioterio@gmail.com'
 usuario_dao = UsuarioDAO(db_path)
+mensagem_dao = MensagemDao(db_path)
 
 if __name__ == '__main__':
     #verificar se o banco de dados existe

@@ -1,6 +1,6 @@
 import sqlite3
-from src.classes_dao import UsuarioDAO
-from src.classes_base import Usuario
+from src.classes_dao import UsuarioDAO,MensagemDao
+from src.classes_base import Usuario,Mensagem
 import app
 import email.message
 import smtplib
@@ -30,18 +30,18 @@ def menu_sistema(usuario_existente):
         opcao = input('\n  Digite a opção desejada: ')
 
         if opcao == '1':
-            enviar_email(app.usuario_dao,usuario_existente)
+            enviar_email(app.usuario_dao,usuario_existente,app.mensagem_dao)
         elif opcao == '2':
             adicionar_contato(app.usuario_dao,usuario_existente)
         elif opcao == '3':
-            decodificar(app.usuario_dao,usuario_existente)
+            decodificar(app.usuario_dao,usuario_existente,app.mensagem_dao)
         elif opcao == '4':
             listar_contatos(app.usuario_dao,usuario_existente)
         elif opcao == '5':
             atualizar_dados(app.usuario_dao,usuario_existente)
         elif opcao == '6':
             print('\n\n  Saindo do sistema ...')
-            break
+            menu.menu_principal()
         else:
             print('\n\n  Opção Inválida!')
 
@@ -65,7 +65,7 @@ def adicionar_contato(usuario_dao,usuario_existente):
     
 
 
-def enviar_email(usuario_dao,usuario_existente):
+def enviar_email(usuario_dao,usuario_existente,mensagem_dao):
 
     remetente_lista = []
 
@@ -87,12 +87,18 @@ def enviar_email(usuario_dao,usuario_existente):
     assunto = str(input("\n Assunto: "))
     frase = str(input('\n  Digite a mensagem: '))
 
+    mensagem_id = utils.gerar_id()
+
     codigo = []
     codigo_inv = []
     identidade = [[1,0],[0,1]]
 
-    chave = eval(usuario_existente.get_chave())
+    chave = eval(funcao.criar_chave())
+
     chave_inv = np.linalg.inv(chave)
+
+    mensagem = Mensagem(mensagem_id,usuario_existente._email,usuario_send._email,frase,str(chave))
+    mensagem_dao.criar_mensagem(mensagem)
 
     lista = funcao.letra_em_numero(frase)
     matriz = funcao.transformar_matriz(lista)
@@ -108,7 +114,7 @@ def enviar_email(usuario_dao,usuario_existente):
     for i in range(len(remetente_lista)):
         usuario_send = usuario_dao.buscar_email(remetente_lista[i])
   
-        utils.encaminhar_email(app.email_from,usuario_send.get_email(),app.senha,assunto,codigo,usuario_send,usuario_existente)
+        utils.encaminhar_email(app.email_from,usuario_send.get_email(),app.senha,assunto,codigo,usuario_send,usuario_existente,mensagem_id)
 
 
 
@@ -116,22 +122,28 @@ def enviar_email(usuario_dao,usuario_existente):
 
 
 
-def decodificar(usuario_dao,usuario_existente):
+def decodificar(usuario_dao,usuario_existente,mensagem_dao):
 
 
-    codigo_unico = str(input('\n  Diite o código usuário: '))
+    codigo_unico = str(input('\n  Diite o código da mensagem: ')) 
     
 
-    usuario_send = usuario_dao.buscar_codigo_unico(codigo_unico)
+    mensagem_id = mensagem_dao.buscar_id(codigo_unico)
 
-    if usuario_send is None:
+    if mensagem_id is None:
         print('\n    Código invalido!')
         codigo_unico = input('\n  Digite um novo código: ')
-        usuario_send = usuario_dao.buscar_codigo_unico(codigo_unico)
-        if usuario_send is None:
+        mensagem_id = mensagem_dao.buscar_id(codigo_unico)
+        if mensagem_id is None:
             menu_sistema(usuario_existente)
 
+
+
+    remetente = mensagem_id._usuario_from
+    usuario_send = usuario_dao.buscar_email(remetente)
+
     contatos = usuario_send.get_contatos()
+
     lista_contatos = eval(contatos)
 
     if usuario_existente.get_email() in lista_contatos:
@@ -141,7 +153,7 @@ def decodificar(usuario_dao,usuario_existente):
         codigo = []
         codigo_inv = []
     
-        chave = eval(usuario_send.get_chave())
+        chave = eval(mensagem_id.get_chave_msg())
         chave_inv = np.linalg.inv(chave)
 
         for j in range(len(matriz)):
@@ -151,7 +163,14 @@ def decodificar(usuario_dao,usuario_existente):
         frase_decod = funcao.formar_frase(codigo_inv)
         frase_list = funcao.numero_em_letra(frase_decod)
         nova_frase = "".join(frase_list)
-        print(nova_frase)
+        print("\n\n"+nova_frase+"\n")
+
+
+        mensagem_dao.deletar_mensagem(mensagem_id)
+
+
+        
+
 
     else:
         print("\n   Decodificação Negada!")

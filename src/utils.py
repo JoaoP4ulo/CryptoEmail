@@ -19,9 +19,20 @@ def criar_banco_de_dados(db_path):
         nome TEXT NOT NULL,
         email TEXT NOT NULL,
         senha TEXT NOT NULL,
-        chave TEXT NOT NULL,
         contatos TEXT,
         chave_user TEXT NOT NULL
+    )
+    """
+
+    #adicionar lógica de operação por chave unica de mensagem
+    #gerar chaves distintas
+    comando_sql_mensagem = """ 
+    CREATE TABLE mensagens (
+        id TEXT NOT NULL,
+        usuario_from TEXT NOT NULL,
+        usuario_to TEXT NOT NULL,
+        mensagem TEXT NOT NULL,
+        chave_msg TEXT NOT NULL
     )
     """
 
@@ -29,6 +40,8 @@ def criar_banco_de_dados(db_path):
     cursor = conexao.cursor()
 
     cursor.execute(comando_sql_usuario)
+
+    cursor.execute(comando_sql_mensagem)
 
     conexao.close()
 
@@ -78,10 +91,10 @@ def mandar_email(email_from:str,email_to:str,senha_app:str,nova_senha:str,assunt
     conexao.commit()
     conexao.close()
 
-def encaminhar_email(email_from:str,email_to:str,senha_app:str,assunto:str,mensagem:str,usuario_send,usuario_existente):
+def encaminhar_email(email_from:str,email_to:str,senha_app:str,assunto:str,mensagem:str,usuario_send,usuario_existente,mensagem_id):
     corpo_email = f"""
     <p>  Oi {usuario_send._nome}, você tem uma nova mensagem segura de {usuario_existente._nome}.</p>
-    <p> <br> <br> {mensagem} com o código: {usuario_existente.get_chave_user()} </p>
+    <p> <br> <br> {mensagem} com o código: {mensagem_id} </p>
     """
 
     msg = email.message.Message()
@@ -100,10 +113,19 @@ def encaminhar_email(email_from:str,email_to:str,senha_app:str,assunto:str,mensa
     print('\n\n  Email enviado')
 
 def gerar_chave():
-    tamanho = 55
+    tamanho = 12
     valores = string.ascii_lowercase + string.digits
     chave_user = ''
     for i in range(tamanho):
         chave_user += choice(valores)
 
     return (chave_user) 
+
+def gerar_id():
+    tamanho = 25
+    valores = string.ascii_lowercase + string.digits
+    id_val = ''
+    for i in range(tamanho):
+        id_val += choice(valores)
+
+    return (id_val)
